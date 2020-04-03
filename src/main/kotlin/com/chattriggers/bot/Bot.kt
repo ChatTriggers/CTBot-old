@@ -6,22 +6,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.features.websocket.ws
-import io.ktor.client.features.websocket.wss
 import io.ktor.http.HttpMethod
 import io.ktor.http.cio.websocket.Frame
 import io.ktor.http.cio.websocket.readText
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.yield
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.MessageBuilder
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 import java.io.File
-import java.lang.IllegalStateException
 import java.time.Instant
 import java.util.*
 
