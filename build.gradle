@@ -37,6 +37,11 @@ jar {
         exclude 'META-INF/LICENSE.txt'
         it.isDirectory() ? it : it.path.endsWith(".pom") ? null : zipTree(it)
     }
+
+    // Tell the jvm what our main class is
+    manifest {
+        attributes 'Main-Class': 'com.chattriggers.bot.BotKt'
+    }
 }
 
 compileKotlin {
