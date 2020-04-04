@@ -41,7 +41,7 @@ jar {
 
     // Tell the jvm what our main class is
     manifest {
-        attributes 'Main-Class': 'com.chattriggers.bot.BotKt'
+        attributes 'Main-Class': 'com.chattriggers.bot.CTBotKt'
     }
 }
 
