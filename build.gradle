@@ -36,6 +36,9 @@ jar {
         exclude 'META-INF/LICENSE'
         exclude 'LICENSE.txt'
         exclude 'META-INF/LICENSE.txt'
+        exclude '**/*.SF'
+        exclude '**/*.DSA'
+        exclude '**/*.RSA'
         it.isDirectory() ? it : it.path.endsWith(".pom") ? null : zipTree(it)
     }
 
