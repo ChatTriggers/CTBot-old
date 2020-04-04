@@ -1,5 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.70'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 group 'com.chattriggers'
@@ -10,38 +11,21 @@ repositories {
     jcenter()
 }
 
-configurations {
-    embed
-    // Make compile extend from our provided configuration so that things added to bundled end up on the compile classpath
-    compile.extendsFrom(embed)
-}
-
 dependencies {
     implementation "com.jessecorbett:diskord:1.5.3"
-    embed "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    embed "io.ktor:ktor-client:1.2.6"
-    embed "io.ktor:ktor-client-core:1.2.6"
-    embed "io.ktor:ktor-client-websockets:1.2.6"
-    embed "io.ktor:ktor-client-cio:1.2.6"
-    embed "com.google.code.gson:gson:2.8.6"
-    embed "org.slf4j:slf4j-simple:1.7.30"
-    embed "org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r"
-    embed 'com.eden.kodiak:dokka-runner:0.4.5'
-    embed 'me.xdrop:fuzzywuzzy:1.2.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "io.ktor:ktor-client:1.2.6"
+    implementation "io.ktor:ktor-client-core:1.2.6"
+    implementation "io.ktor:ktor-client-websockets:1.2.6"
+    implementation "io.ktor:ktor-client-cio:1.2.6"
+    implementation "com.google.code.gson:gson:2.8.6"
+    implementation "org.slf4j:slf4j-simple:1.7.30"
+    implementation "org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r"
+    implementation 'com.eden.kodiak:dokka-runner:0.4.5'
+    implementation 'me.xdrop:fuzzywuzzy:1.2.0'
 }
 
 jar {
-    // Include all of the jars from the bundled configuration in our jar
-    from configurations.embed.collect {
-        exclude 'META-INF/LICENSE'
-        exclude 'LICENSE.txt'
-        exclude 'META-INF/LICENSE.txt'
-        exclude '**/*.SF'
-        exclude '**/*.DSA'
-        exclude '**/*.RSA'
-        it.isDirectory() ? it : it.path.endsWith(".pom") ? null : zipTree(it)
-    }
-
     // Tell the jvm what our main class is
     manifest {
         attributes 'Main-Class': 'com.chattriggers.bot.CTBotKt'
