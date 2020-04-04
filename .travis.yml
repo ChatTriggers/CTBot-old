@@ -4,6 +4,7 @@ jdk:
 before_install:
   - curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python3
   - sudo pip3 install paramiko
+install: skip
 script:
   - "./gradlew shadowJar"
 after_success:
