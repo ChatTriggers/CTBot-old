@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
+import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -100,6 +101,12 @@ object CTBot {
         bot(token) {
             started {
                 channel = clientStore.channels[MODULES_CHANNEL]
+            }
+
+            messageCreated { message ->
+                if (message.content == "bot" && message.channelId == BOTLAND_CHANNEL) {
+                    message.reply("land")
+                }
             }
 
             commands(prefix = "!") {
