@@ -12,7 +12,7 @@ import java.nio.file.Files
 object KDocGenerator {
     fun getDocs(): KotlinModuleDoc {
         val ctjsDir = File("./ctjs")
-        
+
         if (CTBot.PRODUCTION || !ctjsDir.exists()) {
             if (ctjsDir.exists())
                 ctjsDir.deleteRecursively()

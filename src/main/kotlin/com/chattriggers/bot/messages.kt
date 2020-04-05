@@ -74,13 +74,12 @@ suspend fun ChannelClient.mcpFieldMessage(
             }.reversed()
         } else fields
 
-        field("\u200B", sorted.joinToString("\n") {
-            val dispName = if (obf) it.name else it.obfName
-            val subName = if (obf) it.obfName else it.name
-            val subTitle = if (obf) "Name" else "Deobf name"
+        field("\u200B", sorted.joinToString("\n\n") {
+            val firstName = if (obf) it.obfName else it.name
+            val secondName = if (obf) it.name else it.obfName
 
-            "**•** `${it.owner}.\u200B$dispName`" +
-            "\n\u2002\u2002 $subTitle: `$subName`"
+            "**•** `$firstName` → `$secondName`" +
+            "\n\u2002\u2002 Owner: `${it.owner}`"
         }, false)
 
         footer("Query by $username")
@@ -100,11 +99,12 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
             }.reversed()
         } else methods
 
-        field("\u200B", sorted.joinToString("\n") {
-            val separator = if (it.static) '.' else '#'
-            val n = if (obf) it.name else it.obfName
+        field("\u200B", sorted.joinToString("\n\n") {
+            val firstName = if (obf) it.obfName else it.name
+            val secondName = if (obf) it.name else it.obfName
 
-            "**•** `${it.owner}\u200B$separator\u200B$n`" +
+            "**•** `$firstName` → `$secondName`" +
+            "\n\u2002\u2002 Owner: \u2002\u2002`${it.owner}`" +
             "\n\u2002\u2002 Signature: `${it.signature}`"
         }, false)
 
