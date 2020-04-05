@@ -146,6 +146,12 @@ object CTBot {
                     }
                 }
 
+                command("migrate") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
+                    channel.migrateMessage(author.username)
+                }
+
                 command("help") {
                     if (!allowedInChannel(partialMember, channel)) return@command
 
