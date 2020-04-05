@@ -41,10 +41,13 @@ object MCPService {
             .map { it.substring("MD: ".length) }
 
         classes = mcpLines
+            .asSequence()
             .filter { it.startsWith("CL: ") }
             .map { it.substring("CL: ".length) }
             .map { it.split(' ')[0] }
             .map { Class(it.split('/').last(), it) }
+            .filterNot { it.name.contains(Regex("""\$\d+$""")) }
+            .toList()
 
         fields = mcpFields.map {
             val (path, obfPath) = it.split(' ')
