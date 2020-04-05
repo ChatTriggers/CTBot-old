@@ -9,14 +9,14 @@ transport = paramiko.Transport((os.environ["SERVER_HOST"], 22))
 transport.connect(username=os.environ["SERVER_USER"], password=os.environ["SERVER_PASS"])
 sftp = paramiko.SFTPClient.from_transport(transport)
 
-sftp.put("build/libs/" + os.listdir("build/libs/")[0], "/root/bot/bot.jar")
+sftp.put("build/libs/" + os.listdir("build/libs/")[0], "/home/pi/bot/bot.jar")
 sftp.close()
 
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh_client.connect(hostname=os.environ["SERVER_HOST"],username=os.environ["SERVER_USER"],password=os.environ["SERVER_PASS"])
 
-stdin, stdout, stderr = ssh_client.exec_command("/root/bot/restart.sh")  # Non-blocking call
+stdin, stdout, stderr = ssh_client.exec_command("/home/pi/bot/restart.sh")  # Non-blocking call
 stdout.channel.recv_exit_status()
 
 ssh_client.close()
