@@ -1,5 +1,6 @@
-package com.chattriggers.bot
+package com.chattriggers.bot.messages
 
+import com.chattriggers.bot.CTBot
 import com.chattriggers.bot.types.Module
 import com.chattriggers.bot.types.Release
 import com.jessecorbett.diskord.api.rest.client.ChannelClient

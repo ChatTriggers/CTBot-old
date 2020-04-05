@@ -1,7 +1,6 @@
 package com.chattriggers.bot
 
-import com.chattriggers.bot.messages.docsMessage
-import com.chattriggers.bot.messages.helpMessage
+import com.chattriggers.bot.messages.*
 import com.chattriggers.bot.types.*
 import com.google.gson.Gson
 import com.jessecorbett.diskord.api.model.GuildMember
@@ -16,7 +15,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.cio.websocket.readText
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.yield
-import me.xdrop.fuzzywuzzy.FuzzySearch
 import java.io.File
 import java.util.*
 

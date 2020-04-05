@@ -1,5 +1,9 @@
-package com.chattriggers.bot
+package com.chattriggers.bot.messages
 
+import com.chattriggers.bot.CTBot
+import com.chattriggers.bot.Class
+import com.chattriggers.bot.Field
+import com.chattriggers.bot.Method
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.field
 import com.jessecorbett.diskord.dsl.footer
@@ -15,13 +19,12 @@ suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, us
     sendMessage("") {
         title = "MCP class search results for \"$name\""
 
-        field("\u200B", classes.joinToString("\n") {
+        description = classes.joinToString("\n") {
             "**•** `${it.path}`"
-        }, false)
+        }
 
         footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_INSTANT)
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }
@@ -37,18 +40,17 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
             }.reversed()
         } else methods
 
-        field("\u200B", sorted.joinToString("\n\n") {
+        description = sorted.joinToString("\n\n") {
             val firstName = if (obf) it.obfName else it.name
             val secondName = if (obf) it.name else it.obfName
 
             "**•** `$firstName` → `$secondName`" +
             "\n\u2002\u2002 Owner: \u2002\u2002`${it.owner}`" +
             "\n\u2002\u2002 Signature: `${it.signature}`"
-        }, false)
+        }
 
         footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_INSTANT)
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }
@@ -66,17 +68,16 @@ suspend fun ChannelClient.mcpFieldMessage(
             }.reversed()
         } else fields
 
-        field("\u200B", sorted.joinToString("\n\n") {
+        description = sorted.joinToString("\n\n") {
             val firstName = if (obf) it.obfName else it.name
             val secondName = if (obf) it.name else it.obfName
 
             "**•** `$firstName` → `$secondName`" +
             "\n\u2002\u2002 Owner: `${it.owner}`"
-        }, false)
+        }
 
         footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_INSTANT)
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }
