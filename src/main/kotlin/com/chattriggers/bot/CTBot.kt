@@ -37,6 +37,10 @@ object CTBot {
         searchTerms = KDocGenerator.getSearchTerms()
         println("KDocs generated")
 
+        println("Initializing MCPService...")
+        MCPService.init()
+        println("MCPService initialized")
+
         println("Building bot...")
         buildBot()
         println("Bot built")
@@ -97,6 +101,43 @@ object CTBot {
                             "[${it.descriptor}](${it.url})"
                         }
                     }
+                }
+
+                command("mcp") {
+                    if (words.size < 3) {
+                        channel.helpMessage("Too few arguments provided to `!mcp` command")
+                        return@command
+                    }
+
+                    val type = when (val t = words[1].toLowerCase()) {
+                        "field", "method", "class" -> t
+                        else -> {
+                            channel.helpMessage("Unrecognized type. Valid types are: `method`, `field`, `class`")
+                            return@command
+                        }
+                    }
+
+                    val isObf = words[2].startsWith("func_") || words[2].startsWith("field_")
+                    val third = if (words.size > 3) words[3] else null
+
+                    when (type) {
+                        "field" -> {
+                            val fields = MCPService.fieldsFromName(words[2], isObf)
+                            channel.mcpFieldMessage(words[2], isObf, fields, author.username, third)
+                        }
+                        "method" -> {
+                            val methods = MCPService.methodsFromName(words[2], isObf)
+                            channel.mcpMethodMessage(words[2], isObf, methods, author.username, third)
+                        }
+                        "class" -> {
+                            val classes = MCPService.classesFromName(words[2])
+                            channel.mcpClassMessage(words[2], classes, author.username)
+                        }
+                    }
+                }
+
+                command("help") {
+                    channel.helpMessage()
                 }
             }
         }
