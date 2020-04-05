@@ -57,10 +57,6 @@ object CTBot {
         println("Building bot...")
         buildBot()
         println("Bot built")
-
-        println("Setting up websockets...")
-        setupWebsockets()
-        println("Websocket setup")
     }
 
     private suspend fun setupWebsockets() {
@@ -101,6 +97,10 @@ object CTBot {
         bot(token) {
             started {
                 channel = clientStore.channels[MODULES_CHANNEL]
+
+                println("Setting up websockets...")
+                setupWebsockets()
+                println("Websocket setup")
             }
 
             messageCreated { message ->
