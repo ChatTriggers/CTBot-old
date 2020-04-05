@@ -1,5 +1,7 @@
 package com.chattriggers.bot
 
+import com.chattriggers.bot.messages.docsMessage
+import com.chattriggers.bot.messages.helpMessage
 import com.chattriggers.bot.types.*
 import com.google.gson.Gson
 import com.jessecorbett.diskord.api.model.GuildMember
@@ -31,10 +33,10 @@ object CTBot {
     private const val MODULES_CHANNEL = "366740283943157760"
     private const val BOTLAND_CHANNEL = "435654238216126485"
 
+    lateinit var searchTerms: List<SearchTerm>
     private val gson = Gson()
     private val client = HttpClient(CIO) { install(WebSockets) }
     private lateinit var channel: ChannelClient
-    private lateinit var searchTerms: List<SearchTerm>
 
     private val allowedRoles = listOf(
         "436707819752783872", // Admin
@@ -104,17 +106,11 @@ object CTBot {
 
             commands(prefix = "!") {
                 command("javadocs") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    docsMessage(this)
+                }
 
-                    val top = FuzzySearch.extractTop(words[1], searchTerms, { it.name }, 5).map { it.referent }
-
-                    reply("") {
-                        title = "Search results for \"${words[1]}\""
-
-                        description = top.joinToString("\n") {
-                            "[${it.descriptor}](${it.url})"
-                        }
-                    }
+                command("docs") {
+                    docsMessage(this)
                 }
 
                 command("mcp") {
@@ -167,7 +163,7 @@ object CTBot {
         }
     }
 
-    private fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
+    fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
         if (!PRODUCTION) return true
         if (member == null) return false
         if (channel.channelId == BOTLAND_CHANNEL) return true
