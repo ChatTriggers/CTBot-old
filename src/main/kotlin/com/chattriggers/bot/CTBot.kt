@@ -25,7 +25,7 @@ suspend fun main() {
 
 @KtorExperimentalAPI
 object CTBot {
-    private const val PRODUCTION = true
+    const val PRODUCTION = true
 
     const val MESSAGE_COLOR = 0x7b2fb5
     private const val MODULES_CHANNEL = "366740283943157760"

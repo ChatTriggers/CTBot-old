@@ -3,15 +3,20 @@ package com.chattriggers.bot
 import com.chattriggers.bot.types.SearchTerm
 import com.copperleaf.kodiak.kotlin.KotlindocInvokerImpl
 import com.copperleaf.kodiak.kotlin.models.KotlinModuleDoc
+import io.ktor.util.KtorExperimentalAPI
 import org.eclipse.jgit.api.Git
 import java.io.File
 import java.nio.file.Files
 
+@KtorExperimentalAPI
 object KDocGenerator {
     fun getDocs(): KotlinModuleDoc {
         val ctjsDir = File("./ctjs")
+        
+        if (CTBot.PRODUCTION || !ctjsDir.exists()) {
+            if (ctjsDir.exists())
+                ctjsDir.deleteRecursively()
 
-        if (!ctjsDir.exists()) {
             println("Cloning repo...")
             Git.cloneRepository()
                 .setURI("https://github.com/ChatTriggers/ct.js.git")
