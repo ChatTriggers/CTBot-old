@@ -23,10 +23,11 @@ suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
         """.trimIndent(), false)
 
         field("MCP Mapping Lookup", """
-            `!mcp <type> <name>`
+            `!mcp <type> <name> [owner]`
             
             `<type>` can be `class`, `method`, or `field`.
             `<name>` can be any word. It does not have to be an exact match, and can optionally be obfuscated.
+            `[owner]` can optionally be the (partial) name of the owning class.
         """.trimIndent(), false)
 
         field("ChatTriggers Doc Lookup", """
