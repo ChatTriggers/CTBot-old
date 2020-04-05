@@ -61,7 +61,13 @@ object MCPService {
             val obfName = obfPath.split('/').last()
             val owner = path.split('/').dropLast(1).joinToString("/")
 
-            Method(name, obfName, signature, owner, staticMethods.contains(obfName))
+            Method(
+                name,
+                obfName,
+                signature.replace(")", ")\u200B"),
+                owner,
+                staticMethods.contains(obfName)
+            )
         }
     }
 
