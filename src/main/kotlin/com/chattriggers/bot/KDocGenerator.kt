@@ -39,7 +39,10 @@ object KDocGenerator {
             listOf(File("./ctjs/src/main/kotlin").toPath()),
             outputDir.toPath()
         ) {
-            Runnable { println(it.bufferedReader().readText()) }
+            Runnable {
+                // Required, don't remove
+                it.bufferedReader().readText()
+            }
         }!!
     }
 
