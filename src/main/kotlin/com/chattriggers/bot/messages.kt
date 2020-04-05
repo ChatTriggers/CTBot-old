@@ -32,7 +32,7 @@ suspend fun ChannelClient.onCreateModule(module: Module) {
             image(module.image)
 
         color = CTBot.MESSAGE_COLOR
-        timestamp = Instant.now().toString()
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
     }
 }
 
@@ -48,6 +48,7 @@ suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
         field("Changelog", release.changelog, false)
 
         color = CTBot.MESSAGE_COLOR
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
     }
 }
 
@@ -56,6 +57,7 @@ suspend fun ChannelClient.onDeleteModule(module: Module) {
     sendMessage("") {
         title = "Module deleted: ${module.name}"
         color = CTBot.MESSAGE_COLOR
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
     }
 }
 
@@ -65,9 +67,6 @@ suspend fun ChannelClient.mcpFieldMessage(
 ) {
     sendMessage("") {
         title = "MCP field search results for \"$name\""
-        color = CTBot.MESSAGE_COLOR
-        footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
 
         val sorted = if (ownerClass != null) {
             fields.sortedBy {
@@ -83,6 +82,10 @@ suspend fun ChannelClient.mcpFieldMessage(
             "**•** `${it.owner}.\u200B$dispName`" +
             "\n\u2002\u2002 $subTitle: `$subName`"
         }, false)
+
+        footer("Query by $username")
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+        color = CTBot.MESSAGE_COLOR
     }
 }
 
@@ -90,9 +93,6 @@ suspend fun ChannelClient.mcpFieldMessage(
 suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: List<Method>, username: String, ownerClass: String? = null) {
     sendMessage("") {
         title = "MCP method search results for \"$name\""
-        color = CTBot.MESSAGE_COLOR
-        footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
 
         val sorted = if (ownerClass != null) {
             methods.sortedBy {
@@ -107,6 +107,10 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
             "**•** `${it.owner}\u200B$separator\u200B$n`" +
             "\n\u2002\u2002 Signature: `${it.signature}`"
         }, false)
+
+        footer("Query by $username")
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+        color = CTBot.MESSAGE_COLOR
     }
 }
 
@@ -114,23 +118,28 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
 suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, username: String) {
     sendMessage("") {
         title = "MCP class search results for \"$name\""
-        color = CTBot.MESSAGE_COLOR
-        footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
 
         field("\u200B", classes.joinToString("\n") {
             "**•** `${it.path}`"
         }, false)
+
+        footer("Query by $username")
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+        color = CTBot.MESSAGE_COLOR
     }
 }
 
 @KtorExperimentalAPI
-suspend fun ChannelClient.helpMessage(errorMsg: String = "") {
+suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
     sendMessage(errorMsg) {
         title = "CTBot Help"
         description = """
             CTBot is the friendly ChatTriggers bot designed to help you with all of your CT needs!
         """.trimIndent()
+
+        field("Links", """
+            Run `!links` for a list of useful links
+        """.trimIndent(), false)
 
         field("MCP Mapping Lookup", """
             `!mcp <type> <name>`
@@ -145,6 +154,27 @@ suspend fun ChannelClient.helpMessage(errorMsg: String = "") {
             `<search>` can be the name of any public class, object, field, or method.
         """.trimIndent(), false)
 
+        footer("Query by $username")
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
+        color = CTBot.MESSAGE_COLOR
+    }
+}
+
+@KtorExperimentalAPI
+suspend fun ChannelClient.linkMessage(username: String) {
+    sendMessage("") {
+        title = "Links"
+
+        description = """
+            [CT Website](https://www.chattriggers.com/)
+            [CT Modules](https://www.chattriggers.com/modules)
+            [Learn JavaScript](https://www.w3schools.com/js/)
+            [CT GitHub Repo](https://github.com/ChatTriggers/ChatTriggers)
+            [CT GitHub Organization](https://github.com/ChatTriggers)
+        """.trimIndent()
+
+        footer("Query by $username")
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }

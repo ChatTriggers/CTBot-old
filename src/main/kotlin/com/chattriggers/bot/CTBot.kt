@@ -105,14 +105,14 @@ object CTBot {
 
                 command("mcp") {
                     if (words.size < 3) {
-                        channel.helpMessage("Too few arguments provided to `!mcp` command")
+                        channel.helpMessage(author.username, "Too few arguments provided to `!mcp` command")
                         return@command
                     }
 
                     val type = when (val t = words[1].toLowerCase()) {
                         "field", "method", "class" -> t
                         else -> {
-                            channel.helpMessage("Unrecognized type. Valid types are: `method`, `field`, `class`")
+                            channel.helpMessage(author.username, "Unrecognized type. Valid types are: `method`, `field`, `class`")
                             return@command
                         }
                     }
@@ -137,7 +137,11 @@ object CTBot {
                 }
 
                 command("help") {
-                    channel.helpMessage()
+                    channel.helpMessage(author.username)
+                }
+
+                command("links") {
+                    channel.linkMessage(author.username)
                 }
             }
         }
