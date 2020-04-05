@@ -2,6 +2,7 @@ package com.chattriggers.bot
 
 import com.chattriggers.bot.types.*
 import com.google.gson.Gson
+import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
 import com.jessecorbett.diskord.util.words
@@ -24,13 +25,24 @@ suspend fun main() {
 
 @KtorExperimentalAPI
 object CTBot {
+    private const val PRODUCTION = true
+
     const val MESSAGE_COLOR = 0x7b2fb5
-    private const val CHANNEL_ID = "366740283943157760"
+    private const val MODULES_CHANNEL = "366740283943157760"
+    private const val BOTLAND_CHANNEL = "435654238216126485"
 
     private val gson = Gson()
     private val client = HttpClient(CIO) { install(WebSockets) }
     private lateinit var channel: ChannelClient
     private lateinit var searchTerms: List<SearchTerm>
+
+    private val allowedRoles = listOf(
+        "436707819752783872", // Admin
+        "119493795434856448", // Developer
+        "271357115006713858", // Moderator
+        "270252320611106817", // Creator
+        "420668245725413377"  // Patreon Supporter
+    )
 
     suspend fun init() {
         println("Generating KDocs...")
@@ -87,11 +99,13 @@ object CTBot {
 
         bot(token) {
             started {
-                channel = clientStore.channels[CHANNEL_ID]
+                channel = clientStore.channels[MODULES_CHANNEL]
             }
 
             commands(prefix = "!") {
                 command("javadocs") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     val top = FuzzySearch.extractTop(words[1], searchTerms, { it.name }, 5).map { it.referent }
 
                     reply("") {
@@ -104,6 +118,8 @@ object CTBot {
                 }
 
                 command("mcp") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     if (words.size < 3) {
                         channel.helpMessage(author.username, "Too few arguments provided to `!mcp` command")
                         return@command
@@ -137,13 +153,27 @@ object CTBot {
                 }
 
                 command("help") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     channel.helpMessage(author.username)
                 }
 
                 command("links") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     channel.linkMessage(author.username)
                 }
             }
+        }
+    }
+
+    private fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
+        if (!PRODUCTION) return true
+        if (member == null) return false
+        if (channel.channelId == BOTLAND_CHANNEL) return true
+
+        return member.roleIds.any {
+            it in allowedRoles
         }
     }
 }
