@@ -3,6 +3,7 @@ package com.chattriggers.bot
 import com.chattriggers.bot.messages.*
 import com.chattriggers.bot.types.*
 import com.google.gson.Gson
+import com.jessecorbett.diskord.api.model.ChannelType
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
@@ -111,10 +112,14 @@ object CTBot {
 
             commands(prefix = "!") {
                 command("javadocs") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     docsMessage(this)
                 }
 
                 command("docs") {
+                    if (!allowedInChannel(partialMember, channel)) return@command
+
                     docsMessage(this)
                 }
 
@@ -174,8 +179,12 @@ object CTBot {
         }
     }
 
-    fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
+    suspend fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
         if (!PRODUCTION) return true
+
+        val type = channel.get().type
+        if (type == ChannelType.DM || type == ChannelType.GROUP_DM) return true
+
         if (member == null) return false
         if (channel.channelId == BOTLAND_CHANNEL) return true
 

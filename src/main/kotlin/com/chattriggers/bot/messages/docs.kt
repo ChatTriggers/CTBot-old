@@ -1,6 +1,7 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
+import com.jessecorbett.diskord.api.model.ChannelType
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.util.EnhancedEventListener
 import com.jessecorbett.diskord.util.words
@@ -9,8 +10,6 @@ import me.xdrop.fuzzywuzzy.FuzzySearch
 
 @KtorExperimentalAPI
 suspend fun EnhancedEventListener.docsMessage(message: Message) {
-    if (!CTBot.allowedInChannel(message.partialMember, message.channel)) return
-
     val top = FuzzySearch.extractTop(message.words[1], CTBot.searchTerms, { it.name }, 5).map { it.referent }
 
     message.reply("") {
