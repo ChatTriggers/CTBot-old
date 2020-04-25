@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation "com.jessecorbett:diskord:1.5.3"
+    implementation "com.jessecorbett:diskord:1.6.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "io.ktor:ktor-client:1.2.6"
     implementation "io.ktor:ktor-client-core:1.2.6"
@@ -21,7 +21,12 @@ dependencies {
     implementation "com.google.code.gson:gson:2.8.6"
     implementation "org.slf4j:slf4j-simple:1.7.30"
     implementation "org.eclipse.jgit:org.eclipse.jgit:5.7.0.202003110725-r"
-    implementation 'com.eden.kodiak:dokka-runner:0.4.5'
+    implementation files("./libs/dokka-runner-0.4.5.jar")
+    implementation files("./libs/dokka-models-0.4.5.jar")
+    implementation files("./libs/dokka-formatter-0.4.5.jar")
+    implementation files("./libs/common-runner-0.4.5.jar")
+    implementation files("./libs/common-models-0.4.5.jar")
+    implementation files("./libs/common-formatter-0.4.5.jar")
     implementation 'me.xdrop:fuzzywuzzy:1.2.0'
 }
 
