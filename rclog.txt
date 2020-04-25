@@ -1,2 +1,0 @@
-[INFO:4/7/20 12:55 PM] CLI Skipped packages: 0
-[INFO:4/7/20 12:55 PM] Loaded input from: CTBot-1.0.0-all.jar
