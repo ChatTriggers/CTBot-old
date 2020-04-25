@@ -6,13 +6,13 @@ import com.google.gson.Gson
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
-import com.jessecorbett.diskord.util.sendMessage
 import com.jessecorbett.diskord.util.words
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.features.websocket.ws
 import io.ktor.http.HttpMethod
+import io.ktor.http.cio.websocket.Frame
 import io.ktor.http.cio.websocket.readText
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.yield
@@ -36,6 +36,7 @@ object CTBot {
     private val gson = Gson()
     private val client = HttpClient(CIO) { install(WebSockets) }
     private lateinit var channel: ChannelClient
+    private var areWebsocketsSetup = false
 
     private val allowedRoles = listOf(
         "436707819752783872", // Admin
@@ -60,6 +61,11 @@ object CTBot {
     }
 
     private suspend fun setupWebsockets() {
+        if (areWebsocketsSetup) {
+            return
+        }
+        areWebsocketsSetup = true
+
         client.ws(
             method = HttpMethod.Get,
             host = "chattriggers.com",
@@ -68,7 +74,7 @@ object CTBot {
             pingIntervalMillis = 60000
 
             while (true) {
-                val frame = incoming.receive() as io.ktor.http.cio.websocket.Frame.Text
+                val frame = incoming.receive() as Frame.Text
                 val text = frame.readText()
 
                 val event: Any = when {
