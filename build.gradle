@@ -1,7 +1,18 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.71'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
+
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'com.chattriggers'
 version '1.0.0'

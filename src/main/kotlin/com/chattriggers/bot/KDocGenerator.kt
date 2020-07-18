@@ -13,18 +13,24 @@ object KDocGenerator {
     fun getDocs(): KotlinModuleDoc {
         val ctjsDir = File("./ctjs")
 
-        if (CTBot.PRODUCTION || !ctjsDir.exists()) {
-            if (ctjsDir.exists())
-                ctjsDir.deleteRecursively()
+        logInfo("Getting KDocs.")
+        logInfo("CTJS dir: ${ctjsDir.absolutePath}")
+        logInfo("CTJS dir exists: ${ctjsDir.exists()}")
 
-            println("Cloning repo...")
+        if (CTBot.PRODUCTION || !ctjsDir.exists()) {
+            if (ctjsDir.exists()) {
+                logInfo("Deleting CTJS dir")
+                ctjsDir.deleteRecursively()
+            }
+
+            logInfo("Cloning ctjs repo")
             Git.cloneRepository()
                 .setURI("https://github.com/ChatTriggers/ct.js.git")
                 .setBranchesToClone(listOf("refs/heads/master"))
                 .setBranch("refs/heads/master")
                 .setDirectory(ctjsDir)
                 .call()
-            println("Repo cloned")
+            logInfo("ctjs repo cloned")
         }
 
         val cacheDir = Files.createTempDirectory("dokkaCache")
@@ -49,6 +55,8 @@ object KDocGenerator {
     fun getSearchTerms(): List<SearchTerm> {
         val docs = getDocs()
         val terms = mutableListOf<SearchTerm>()
+
+        logInfo("Getting search terms")
 
         docs.classes.filter { clazz ->
             clazz.modifiers.publicMember()
@@ -121,6 +129,8 @@ object KDocGenerator {
                 )
             }.run(terms::addAll)
         }
+
+        logInfo("Finished getting search terms")
 
         return terms
     }

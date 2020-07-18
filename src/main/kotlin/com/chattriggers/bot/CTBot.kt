@@ -18,11 +18,30 @@ import io.ktor.http.cio.websocket.readText
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.yield
 import java.io.File
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @KtorExperimentalAPI
 suspend fun main() {
     CTBot.init()
+}
+
+var formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("'['MM/dd/yy']' '['hh:mm:ss:SSS a z']' ").withZone(ZoneId.of("UTC"))
+
+fun logInfo(message: String) {
+    print(LocalDateTime.now().format(formatter))
+    print("[INFO] ")
+    println(message)
+}
+
+fun logWarn(message: String) {
+    print(LocalDateTime.now().format(formatter))
+    print("\u001b[38;2;255;0;102m")
+    print("[WARNING] ")
+    print(message)
+    println("\u001b[0m")
 }
 
 @KtorExperimentalAPI
@@ -48,21 +67,21 @@ object CTBot {
     )
 
     suspend fun init() {
-        println("Generating KDocs...")
+        logInfo("Generating KDocs")
         searchTerms = KDocGenerator.getSearchTerms()
-        println("KDocs generated")
+        logInfo("KDocs generated")
 
-        println("Initializing MCPService...")
+        logInfo("Initializing MCPService")
         MCPService.init()
-        println("MCPService initialized")
+        logInfo("MCPService initialized")
 
-        println("Building bot...")
+        logInfo("Starting bot")
         buildBot()
-        println("Bot built")
     }
 
     private suspend fun setupWebsockets() {
         if (areWebsocketsSetup) {
+            logInfo("Websockets already setup, returning")
             return
         }
         areWebsocketsSetup = true
@@ -86,9 +105,36 @@ object CTBot {
                 }
 
                 when (event) {
-                    is CreateModuleEvent -> channel.onCreateModule(event.module)
-                    is CreateReleaseEvent -> channel.onCreateRelease(event.module, event.release)
-                    is DeleteModuleEvent -> channel.onDeleteModule(event.module)
+                    is CreateModuleEvent -> {
+                        val module = event.module
+
+                        logInfo("Newly created module: ${module.name} (${module.id})")
+                        logInfo("    Owner: ${module.owner.name} (${module.owner.id}, rank ${module.owner.rank})")
+                        logInfo("    Description: ${module.description}")
+                        logInfo("    Image: ${module.image}")
+                        logInfo("    Downloads: ${module.downloads}")
+                        logInfo("    Tags: ${module.tags.joinToString()}")
+                        logInfo("    Number of releases: ${module.releases}") // Should always be zero
+
+                        channel.onCreateModule(module)
+                    }
+                    is CreateReleaseEvent -> {
+                        val module = event.module
+                        val release = event.release
+
+                        logInfo("Release created for module ${module.name} (${module.id})")
+                        logInfo("    Id: ${release.id}")
+                        logInfo("    Release version: ${release.releaseVersion}")
+                        logInfo("    Mod version: ${release.modVersion}")
+                        logInfo("    Changelog: ${release.changelog}")
+                        logInfo("    Downloads: ${release.downloads}") // Should always be zero
+
+                        channel.onCreateRelease(module, release)
+                    }
+                    is DeleteModuleEvent -> {
+                        logInfo("Deleted module ${event.module.name} (${event.module.id})")
+                        channel.onDeleteModule(event.module)
+                    }
                 }
 
                 yield()
@@ -105,34 +151,41 @@ object CTBot {
             started {
                 channel = clientStore.channels[MODULES_CHANNEL]
 
-                println("Setting up websockets...")
+                logInfo("Setting up websockets")
                 setupWebsockets()
-                println("Websocket setup")
+                logInfo("Websockets setup")
             }
 
             messageCreated { message ->
                 if (message.content == "bot" && message.channelId == BOTLAND_CHANNEL) {
+                    logInfo("botland")
                     message.reply("land")
                 }
             }
 
             commands(prefix = "!") {
                 command("javadocs") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "javadocs")) return@command
+
+                    logInfo("Searching javadocs for ${words[1]}")
 
                     docsMessage(this)
                 }
 
                 command("docs") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "docs")) return@command
+
+                    logInfo("Searching javadocs for ${words[1]}")
 
                     docsMessage(this)
                 }
 
                 command("mcp") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "mcp")) return@command
 
                     if (words.size < 3) {
+                        logWarn("User provided ${words.size} arguments to !mcp, sending error message")
+
                         channel.helpMessage(author.username, "Too few arguments provided to `!mcp` command")
                         return@command
                     }
@@ -140,7 +193,8 @@ object CTBot {
                     val type = when (val t = words[1].toLowerCase()) {
                         "field", "method", "class" -> t
                         else -> {
-                            channel.helpMessage(author.username, "Unrecognized type. Valid types are: `method`, `field`, `class`")
+                            logWarn("User provided unrecognized type to !mcp: $t")
+                            channel.helpMessage(author.username, "Unrecognized type `$t`. Valid types are: `method`, `field`, `class`")
                             return@command
                         }
                     }
@@ -165,37 +219,55 @@ object CTBot {
                 }
 
                 command("migrate") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "migrate")) return@command
 
+                    logInfo("Sending migrate message to ${author.username}")
                     channel.migrateMessage(author.username)
                 }
 
                 command("help") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "help")) return@command
 
+                    logInfo("Sending help message to ${author.username}")
                     channel.helpMessage(author.username)
                 }
 
                 command("links") {
-                    if (!allowedInChannel(partialMember, channel)) return@command
+                    if (!allowedInChannel(partialMember, channel, "links")) return@command
 
+                    logInfo("Sending links message to ${author.username}")
                     channel.linkMessage(author.username)
                 }
             }
         }
     }
 
-    suspend fun allowedInChannel(member: GuildMember?, channel: ChannelClient): Boolean {
-        if (!PRODUCTION) return true
+    private suspend fun allowedInChannel(member: GuildMember?, channel: ChannelClient, commandName: String): Boolean {
+        val isAllowed = let {
+            if (!PRODUCTION) return@let true
 
-        val type = channel.get().type
-        if (type == ChannelType.DM || type == ChannelType.GROUP_DM) return true
+            val type = channel.get().type
+            if (type == ChannelType.DM || type == ChannelType.GROUP_DM) return@let true
 
-        if (member == null) return false
-        if (channel.channelId == BOTLAND_CHANNEL) return true
+            if (member == null) return@let false
+            if (channel.channelId == BOTLAND_CHANNEL) return@let true
 
-        return member.roleIds.any {
-            it in allowedRoles
+            return@let member.roleIds.any {
+                it in allowedRoles
+            }
         }
+
+
+        if (!isAllowed) {
+            val username = member?.nickname ?: "<null>"
+            val id = member?.user?.id ?: "<null>"
+
+            logInfo("Getting channel name for channel ${channel.channelId}")
+            val channelName = channel.get().name
+
+            logWarn("Member $username ($id) is not allowed to use !$commandName in channel $channelName (${channel.channelId})")
+        }
+
+        return isAllowed
     }
 }

@@ -28,7 +28,10 @@ object MCPService {
     private lateinit var staticMethods: List<String>
 
     fun init() {
+        logInfo("Initialing MCPService")
         staticMethods = MCPService::class.java.getResource("/static_methods.txt").readText().split('\n')
+
+        logInfo("Found ${staticMethods.size} static methods")
 
         val mcpLines = MCPService::class.java.getResource("/mcp-srg.srg").readText().split('\n')
 
@@ -49,6 +52,8 @@ object MCPService {
             .filterNot { it.name.contains(Regex("""\$\d+$""")) }
             .toList()
 
+        logInfo("Found ${classes.size} classes")
+
         fields = mcpFields.map {
             val (path, obfPath) = it.split(' ')
             val name = path.split('/').last()
@@ -57,6 +62,8 @@ object MCPService {
 
             Field(name, obfName, owner)
         }
+
+        logInfo("Found ${fields.size} fields")
 
         methods = mcpMethods.map {
             val (path, signature, obfPath) = it.split(' ')
@@ -72,6 +79,8 @@ object MCPService {
                 staticMethods.contains(obfName)
             )
         }
+
+        logInfo("Found ${methods.size} methods")
     }
 
     fun fieldsFromName(name: String, obf: Boolean) = FuzzySearch.extractTop(name, fields, {
