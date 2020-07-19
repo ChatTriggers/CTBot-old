@@ -22,7 +22,8 @@ suspend fun ChannelClient.onCreateModule(module: Module) {
         if (module.tags.isNotEmpty())
             field("Tags", module.tags.joinToString(), true)
 
-        field("Description", module.description, false)
+        if (!module.description.isBlank())
+            field("Description", module.description, false)
 
         if (module.image.isNotBlank())
             image(module.image)
