@@ -40,10 +40,17 @@ suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
         title = "Release created for module: ${module.name}"
         url = "https://www.chattriggers.com/modules/v/${module.name}"
 
-        field("Author", module.owner.name, true)
-        field("Release Version", release.releaseVersion, true)
-        field("Mod Version", release.modVersion, true)
-        field("Changelog", release.changelog, false)
+        if (module.owner.name.isNotBlank())
+            field("Author", module.owner.name, true)
+
+        if (release.releaseVersion.isNotBlank())
+            field("Release Version", release.releaseVersion, true)
+
+        if (release.modVersion.isNotBlank())
+            field("Mod Version", release.modVersion, true)
+
+        if (release.changelog.isNotBlank())
+            field("Changelog", release.changelog, false)
 
         color = CTBot.MESSAGE_COLOR
         timestamp = ZonedDateTime.now(ZoneOffset.UTC)
