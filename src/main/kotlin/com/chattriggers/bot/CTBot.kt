@@ -7,7 +7,9 @@ import com.jessecorbett.diskord.api.model.ChannelType
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
+import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
+import com.vdurmont.emoji.EmojiManager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.websocket.WebSockets
@@ -51,12 +53,15 @@ object CTBot {
     const val MESSAGE_COLOR = 0x7b2fb5
     private const val MODULES_CHANNEL = "366740283943157760"
     private const val BOTLAND_CHANNEL = "435654238216126485"
+    private const val NO_EMOJI_ROLE = "745047588381917216"
 
     lateinit var searchTerms: List<SearchTerm>
     private val gson = Gson()
     private val client = HttpClient(CIO) { install(WebSockets) }
     private lateinit var channel: ChannelClient
     private var areWebsocketsSetup = false
+
+    private val customEmojiRegex = "<a?:\\w+:\\d+>".toRegex()
 
     private val allowedRoles = listOf(
         "436707819752783872", // Admin
@@ -160,6 +165,21 @@ object CTBot {
                 if (message.content == "bot" && message.channelId == BOTLAND_CHANNEL) {
                     logInfo("botland")
                     message.reply("land")
+                } else if (message.partialMember?.roleIds?.contains(NO_EMOJI_ROLE) == true && containsEmoji(message.content)) {
+                    logInfo("Deleting message from user: ${message.content}")
+                    message.delete()
+                }
+            }
+
+            messageUpdated { message ->
+                val channel = clientStore.channels[message.channelId].get()
+                if (channel.guildId == null || message.author == null)
+                    return@messageUpdated
+                val user = clientStore.guilds[channel.guildId!!].getMember(message.author!!.id)
+
+                if (user.roleIds.contains(NO_EMOJI_ROLE) && message.content?.let(::containsEmoji) == true) {
+                    logInfo("Deleting edited message from user: ${message.content}")
+                    message.delete()
                 }
             }
 
@@ -270,4 +290,6 @@ object CTBot {
 
         return isAllowed
     }
+
+    private fun containsEmoji(message: String) = message.contains(customEmojiRegex) || EmojiManager.containsEmoji(message)
 }
