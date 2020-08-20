@@ -54,6 +54,7 @@ object CTBot {
     private const val MODULES_CHANNEL = "366740283943157760"
     private const val BOTLAND_CHANNEL = "435654238216126485"
     private const val NO_EMOJI_ROLE = "745047588381917216"
+    private const val NO_QUOTES_ROLE = "746096240978296953"
 
     lateinit var searchTerms: List<SearchTerm>
     private val gson = Gson()
@@ -62,6 +63,7 @@ object CTBot {
     private var areWebsocketsSetup = false
 
     private val customEmojiRegex = "<a?:\\w+:\\d+>".toRegex()
+    private val quoteRegex = "> .+\\n<@[!&#]?[0-9]{16,18}>".toRegex()
 
     private val allowedRoles = listOf(
         "436707819752783872", // Admin
@@ -166,7 +168,10 @@ object CTBot {
                     logInfo("botland")
                     message.reply("land")
                 } else if (message.partialMember?.roleIds?.contains(NO_EMOJI_ROLE) == true && containsEmoji(message.content)) {
-                    logInfo("Deleting message from user: ${message.content}")
+                    logInfo("Deleting message from user ${message.partialMember!!.nickname}: ${message.content}")
+                    message.delete()
+                } else if (message.partialMember?.roleIds?.contains(NO_QUOTES_ROLE) == true && containsQuote(message.content)) {
+                    logInfo("Deleting quote from user ${message.partialMember!!.nickname}: ${message.content}")
                     message.delete()
                 }
             }
@@ -178,7 +183,10 @@ object CTBot {
                 val user = clientStore.guilds[channel.guildId!!].getMember(message.author!!.id)
 
                 if (user.roleIds.contains(NO_EMOJI_ROLE) && message.content?.let(::containsEmoji) == true) {
-                    logInfo("Deleting edited message from user: ${message.content}")
+                    logInfo("Deleting edited message from user ${user.nickname}: ${message.content}")
+                    message.delete()
+                } else if (user.roleIds.contains(NO_QUOTES_ROLE) && message.content?.let(::containsQuote) == true) {
+                    logInfo("Deleting quote message from user ${user.nickname}: ${message.content}")
                     message.delete()
                 }
             }
@@ -292,4 +300,6 @@ object CTBot {
     }
 
     private fun containsEmoji(message: String) = message.contains(customEmojiRegex) || EmojiManager.containsEmoji(message)
+
+    private fun containsQuote(message: String) = message.contains(quoteRegex)
 }
