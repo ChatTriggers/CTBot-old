@@ -97,51 +97,59 @@ object CTBot {
             host = "chattriggers.com",
             path = "/api/events"
         ) {
-            while (true) {
-                val frame = incoming.receive() as Frame.Text
-                val text = frame.readText()
+            pingIntervalMillis = 60000
 
-                val event: Any = when {
-                    text.contains("release_created") -> gson.fromJson(text, CreateReleaseEvent::class.java)
-                    text.contains("module_created") -> gson.fromJson(text, CreateModuleEvent::class.java)
-                    text.contains("module_deleted") -> gson.fromJson(text, DeleteModuleEvent::class.java)
-                    else -> throw IllegalStateException("Unrecognized websocket response")
+            try {
+                while (true) {
+                    val frame = incoming.receive() as Frame.Text
+                    val text = frame.readText()
+
+                    val event: Any = when {
+                        text.contains("release_created") -> gson.fromJson(text, CreateReleaseEvent::class.java)
+                        text.contains("module_created") -> gson.fromJson(text, CreateModuleEvent::class.java)
+                        text.contains("module_deleted") -> gson.fromJson(text, DeleteModuleEvent::class.java)
+                        else -> throw IllegalStateException("Unrecognized websocket response")
+                    }
+
+                    when (event) {
+                        is CreateModuleEvent -> {
+                            val module = event.module
+
+                            logInfo("Newly created module: ${module.name} (${module.id})")
+                            logInfo("    Owner: ${module.owner.name} (${module.owner.id}, rank ${module.owner.rank})")
+                            logInfo("    Description: ${module.description}")
+                            logInfo("    Image: ${module.image}")
+                            logInfo("    Downloads: ${module.downloads}")
+                            logInfo("    Tags: ${module.tags.joinToString()}")
+                            logInfo("    Number of releases: ${module.releases}") // Should always be zero
+
+                            channel.onCreateModule(module)
+                        }
+                        is CreateReleaseEvent -> {
+                            val module = event.module
+                            val release = event.release
+
+                            logInfo("Release created for module ${module.name} (${module.id})")
+                            logInfo("    Id: ${release.id}")
+                            logInfo("    Release version: ${release.releaseVersion}")
+                            logInfo("    Mod version: ${release.modVersion}")
+                            logInfo("    Changelog: ${release.changelog}")
+                            logInfo("    Downloads: ${release.downloads}") // Should always be zero
+
+                            channel.onCreateRelease(module, release)
+                        }
+                        is DeleteModuleEvent -> {
+                            logInfo("Deleted module ${event.module.name} (${event.module.id})")
+                            channel.onDeleteModule(event.module)
+                        }
+                    }
+
+                    yield()
                 }
-
-                when (event) {
-                    is CreateModuleEvent -> {
-                        val module = event.module
-
-                        logInfo("Newly created module: ${module.name} (${module.id})")
-                        logInfo("    Owner: ${module.owner.name} (${module.owner.id}, rank ${module.owner.rank})")
-                        logInfo("    Description: ${module.description}")
-                        logInfo("    Image: ${module.image}")
-                        logInfo("    Downloads: ${module.downloads}")
-                        logInfo("    Tags: ${module.tags.joinToString()}")
-                        logInfo("    Number of releases: ${module.releases}") // Should always be zero
-
-                        channel.onCreateModule(module)
-                    }
-                    is CreateReleaseEvent -> {
-                        val module = event.module
-                        val release = event.release
-
-                        logInfo("Release created for module ${module.name} (${module.id})")
-                        logInfo("    Id: ${release.id}")
-                        logInfo("    Release version: ${release.releaseVersion}")
-                        logInfo("    Mod version: ${release.modVersion}")
-                        logInfo("    Changelog: ${release.changelog}")
-                        logInfo("    Downloads: ${release.downloads}") // Should always be zero
-
-                        channel.onCreateRelease(module, release)
-                    }
-                    is DeleteModuleEvent -> {
-                        logInfo("Deleted module ${event.module.name} (${event.module.id})")
-                        channel.onDeleteModule(event.module)
-                    }
-                }
-
-                yield()
+            } catch (e: Exception) {
+                areWebsocketsSetup = false
+                close(e)
+                setupWebsockets()
             }
         }
     }
