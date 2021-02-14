@@ -7,7 +7,6 @@ import com.jessecorbett.diskord.api.model.ChannelType
 import com.jessecorbett.diskord.api.model.GuildMember
 import com.jessecorbett.diskord.api.rest.client.ChannelClient
 import com.jessecorbett.diskord.dsl.*
-import com.jessecorbett.diskord.util.authorId
 import com.jessecorbett.diskord.util.words
 import com.vdurmont.emoji.EmojiManager
 import io.ktor.client.HttpClient
@@ -98,8 +97,6 @@ object CTBot {
             host = "chattriggers.com",
             path = "/api/events"
         ) {
-            pingIntervalMillis = 60000
-
             while (true) {
                 val frame = incoming.receive() as Frame.Text
                 val text = frame.readText()
