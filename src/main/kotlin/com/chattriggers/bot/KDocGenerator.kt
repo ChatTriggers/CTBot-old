@@ -87,8 +87,10 @@ object KDocGenerator {
                     append('-')
                 }.toString()
 
-                val returnType = when (method.returnValue.name) {
-                    "()" -> "Unit"
+                val originalReturnValue = method.returnValue.name
+                val returnType = when {
+                    originalReturnValue.startsWith("apply {\n") -> name
+                    originalReturnValue == "()" -> "Unit"
                     else -> method.returnValue.signature.joinToString("") { it.text }
                 }
 
