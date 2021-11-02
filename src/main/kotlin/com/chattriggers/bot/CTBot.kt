@@ -271,6 +271,13 @@ object CTBot {
                     logInfo("Sending links message to ${author.username}")
                     channel.linkMessage(author.username)
                 }
+
+                command("notworking") {
+                    if (!allowedInChannel(partialMember, channel, "notworking")) return@command
+
+                    logInfo("Sending not working message to ${channel.channelId}")
+                    channel.notWorkingMessage(author.username)
+                }
             }
         }
     }
