@@ -16,7 +16,7 @@ suspend fun ChannelClient.learnJsMessage(username: String) {
         title = "JavaScript Links"
 
         description = """
-            You are expected to understand the basics of JavaScript before asking for help in the ChatTriggers discord. Here are some good places to start!
+            You need some basic JavaScript knowledge to use ChatTriggers, and the best place to do that is a dedicated JavaScript tutorial. Here are some good places to start!
             [Official Documentation](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
             [W3Schools Tutorial](https://www.w3schools.com/js/)
             [Tutorial with Interactive Editor](https://www.codecademy.com/learn/introduction-to-javascript)
