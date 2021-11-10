@@ -278,6 +278,13 @@ object CTBot {
                     logInfo("Sending not working message to ${channel.channelId}")
                     channel.notWorkingMessage(author.username)
                 }
+
+                command("learnjs") {
+                    if (!allowedInChannel(partialMember, channel, "learnjs")) return@command
+
+                    logInfo("Sending learnjs message to ${channel.channelId}")
+                    channel.learnJsMessage(author.username)
+                }
             }
         }
     }
