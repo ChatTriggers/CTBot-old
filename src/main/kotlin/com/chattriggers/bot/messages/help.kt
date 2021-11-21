@@ -37,8 +37,7 @@ suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
         """.trimIndent(), false)
 
         footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_INSTANT)
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }

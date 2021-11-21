@@ -23,8 +23,7 @@ suspend fun ChannelClient.linkMessage(username: String) {
         """.trimIndent()
 
         footer("Query by $username")
-        timestamp = ZonedDateTime.now(ZoneOffset.UTC)
-            .format(DateTimeFormatter.ISO_INSTANT)
+        timestamp = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT)
         color = CTBot.MESSAGE_COLOR
     }
 }

@@ -45,6 +45,13 @@ fun logWarn(message: String) {
     println("\u001b[0m")
 }
 
+fun sanitizeInput(message: String) = message
+        .replace("@", "\\@")
+        .replace("~~", "\\~\\~")
+        .replace("*", "\\*")
+        .replace("`", "\\`")
+        .replace("_", "\\_")
+
 @KtorExperimentalAPI
 object CTBot {
     const val PRODUCTION = true
@@ -223,11 +230,11 @@ object CTBot {
                         return@command
                     }
 
-                    val type = when (val t = words[1].toLowerCase()) {
-                        "field", "method", "class" -> t
+                    val type = when (val word = sanitizeInput(words[1].toLowerCase())) {
+                        "field", "method", "class" -> word
                         else -> {
-                            logWarn("User provided unrecognized type to !mcp: $t")
-                            channel.helpMessage(author.username, "Unrecognized type `$t`. Valid types are: `method`, `field`, `class`")
+                            logWarn("User provided unrecognized type to !mcp: $word")
+                            channel.helpMessage(author.username, "Unrecognized type `$word`. Valid types are: `method`, `field`, `class`")
                             return@command
                         }
                     }

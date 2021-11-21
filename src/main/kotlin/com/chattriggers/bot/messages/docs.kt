@@ -1,6 +1,7 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
+import com.chattriggers.bot.sanitizeInput
 import com.jessecorbett.diskord.api.model.ChannelType
 import com.jessecorbett.diskord.api.model.Message
 import com.jessecorbett.diskord.util.EnhancedEventListener
@@ -13,7 +14,7 @@ suspend fun EnhancedEventListener.docsMessage(message: Message) {
     val top = FuzzySearch.extractTop(message.words[1], CTBot.searchTerms, { it.name }, 5).map { it.referent }
 
     message.reply("") {
-        title = "Search results for \"${message.words[1]}\""
+        title = "Search results for \"${sanitizeInput(message.words[1])}\""
 
         description = top.joinToString("\n") {
             "[${it.descriptor}](${it.url})"
