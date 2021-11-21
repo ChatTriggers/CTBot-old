@@ -9,8 +9,8 @@ import java.nio.file.Files
 
 object KDocGenerator {
     fun getSearchTerms(): List<SearchTerm> {
-        if (!CTBot.PRODUCTION)
-            return emptyList()
+        // if (!CTBot.PRODUCTION)
+        //     return emptyList()
 
         val docs = getDocs()
         val terms = mutableListOf<SearchTerm>()
