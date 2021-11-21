@@ -3,10 +3,13 @@ package com.chattriggers.bot
 import com.chattriggers.bot.messages.*
 import com.chattriggers.bot.types.*
 import com.google.gson.Gson
-import com.jessecorbett.diskord.api.model.ChannelType
-import com.jessecorbett.diskord.api.model.GuildMember
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.*
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.api.common.DM
+import com.jessecorbett.diskord.api.common.GuildMember
+import com.jessecorbett.diskord.api.common.NamedChannel
+import com.jessecorbett.diskord.bot.bot
+import com.jessecorbett.diskord.bot.classicCommands
+import com.jessecorbett.diskord.bot.events
 import com.jessecorbett.diskord.util.words
 import com.vdurmont.emoji.EmojiManager
 import io.ktor.client.HttpClient
@@ -14,58 +17,30 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.websocket.WebSockets
 import io.ktor.client.features.websocket.ws
 import io.ktor.http.HttpMethod
-import io.ktor.http.cio.websocket.Frame
-import io.ktor.http.cio.websocket.readText
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.http.cio.websocket.*
+import io.ktor.util.*
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.yield
 import java.io.File
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 
-@KtorExperimentalAPI
 suspend fun main() {
     CTBot.init()
 }
 
-var formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("'['MM/dd/yy']' '['hh:mm:ss:SSS a z']' ").withZone(ZoneId.of("UTC"))
-
-fun logInfo(message: String) {
-    print(LocalDateTime.now().format(formatter))
-    print("[INFO] ")
-    println(message)
-}
-
-fun logWarn(message: String) {
-    print(LocalDateTime.now().format(formatter))
-    print("\u001b[38;2;255;0;102m")
-    print("[WARNING] ")
-    print(message)
-    println("\u001b[0m")
-}
-
-fun sanitizeInput(message: String) = message
-        .replace("@", "\\@")
-        .replace("~~", "\\~\\~")
-        .replace("*", "\\*")
-        .replace("`", "\\`")
-        .replace("_", "\\_")
-
-@KtorExperimentalAPI
 object CTBot {
     const val PRODUCTION = true
 
     const val MESSAGE_COLOR = 0x7b2fb5
-    private const val MODULES_CHANNEL = "366740283943157760"
-    private const val BOTLAND_CHANNEL = "435654238216126485"
-    private const val NO_EMOJI_ROLE = "745047588381917216"
-    private const val NO_QUOTES_ROLE = "746096240978296953"
+    private const val MODULES_CHANNEL_ID = "366740283943157760"
+    private const val BOTLAND_CHANNEL_ID = "435654238216126485"
+    private const val NO_EMOJI_ROLE_ID = "745047588381917216"
+    private const val NO_QUOTES_ROLE_ID = "746096240978296953"
 
     lateinit var searchTerms: List<SearchTerm>
     private val gson = Gson()
     private val client = HttpClient(CIO) { install(WebSockets) }
-    private lateinit var channel: ChannelClient
+    private lateinit var modulesChannel: ChannelClient
     private var areWebsocketsSetup = false
 
     private val customEmojiRegex = "<a?:\\w+:\\d+>".toRegex()
@@ -130,7 +105,7 @@ object CTBot {
                             logInfo("    Tags: ${module.tags.joinToString()}")
                             logInfo("    Number of releases: ${module.releases}") // Should always be zero
 
-                            channel.onCreateModule(module)
+                            modulesChannel.onCreateModule(module)
                         }
                         is CreateReleaseEvent -> {
                             val module = event.module
@@ -143,11 +118,11 @@ object CTBot {
                             logInfo("    Changelog: ${release.changelog}")
                             logInfo("    Downloads: ${release.downloads}") // Should always be zero
 
-                            channel.onCreateRelease(module, release)
+                            modulesChannel.onCreateRelease(module, release)
                         }
                         is DeleteModuleEvent -> {
                             logInfo("Deleted module ${event.module.name} (${event.module.id})")
-                            channel.onDeleteModule(event.module)
+                            modulesChannel.onDeleteModule(event.module)
                         }
                     }
 
@@ -155,7 +130,7 @@ object CTBot {
                 }
             } catch (e: Exception) {
                 areWebsocketsSetup = false
-                close(e)
+                cancel("Internal error", e)
                 setupWebsockets()
             }
         }
@@ -167,74 +142,83 @@ object CTBot {
             .getProperty("bot_token")
 
         bot(token) {
-            started {
-                channel = clientStore.channels[MODULES_CHANNEL]
+            events {
+                modulesChannel = channel(MODULES_CHANNEL_ID)
 
-                logInfo("Setting up websockets")
-                setupWebsockets()
-                logInfo("Websockets setup")
-            }
+                onReady {
+                    if (PRODUCTION) {
+                        logInfo("Setting up websockets")
+                        setupWebsockets()
+                        logInfo("Websockets setup")
+                    }
+                }
 
-            messageCreated { message ->
-                if (message.content == "bot" && message.channelId == BOTLAND_CHANNEL) {
-                    logInfo("botland")
-                    message.reply("land")
-                } else if (message.partialMember?.roleIds?.contains(NO_EMOJI_ROLE) == true && containsEmoji(message.content)) {
-                    logInfo("Deleting message from user ${message.partialMember!!.nickname}: ${message.content}")
-                    message.delete()
-                } else if (message.partialMember?.roleIds?.contains(NO_QUOTES_ROLE) == true && containsQuote(message.content)) {
-                    logInfo("Deleting quote from user ${message.partialMember!!.nickname}: ${message.content}")
-                    message.delete()
+                onMessageCreate {  message ->
+                    if (message.content == "bot" && message.channelId == BOTLAND_CHANNEL_ID) {
+                        logInfo("botland")
+                        message.reply("land")
+                    } else if (message.partialMember?.roleIds?.contains(NO_EMOJI_ROLE_ID) == true && containsEmoji(message.content)) {
+                        logInfo("Deleting message from user ${message.partialMember!!.nickname}: ${message.content}")
+                        message.delete()
+                    } else if (message.partialMember?.roleIds?.contains(NO_QUOTES_ROLE_ID) == true && containsQuote(message.content)) {
+                        logInfo("Deleting quote from user ${message.partialMember!!.nickname}: ${message.content}")
+                        message.delete()
+                    }
+                }
+
+                onMessageUpdate {  message ->
+                    val user = message.partialMember ?: return@onMessageUpdate
+
+                    if (user.roleIds.contains(NO_EMOJI_ROLE_ID) && containsEmoji(message.content)) {
+                        logInfo("Deleting edited message from user ${user.nickname}: ${message.content}")
+                        message.delete()
+                    } else if (user.roleIds.contains(NO_QUOTES_ROLE_ID) && containsQuote(message.content)) {
+                        logInfo("Deleting quote message from user ${user.nickname}: ${message.content}")
+                        message.delete()
+                    }
                 }
             }
 
-            messageUpdated { message ->
-                val channel = clientStore.channels[message.channelId].get()
-                if (channel.guildId == null || message.author == null)
-                    return@messageUpdated
-                val user = clientStore.guilds[channel.guildId!!].getMember(message.author!!.id)
-
-                if (user.roleIds.contains(NO_EMOJI_ROLE) && message.content?.let(::containsEmoji) == true) {
-                    logInfo("Deleting edited message from user ${user.nickname}: ${message.content}")
-                    message.delete()
-                } else if (user.roleIds.contains(NO_QUOTES_ROLE) && message.content?.let(::containsQuote) == true) {
-                    logInfo("Deleting quote message from user ${user.nickname}: ${message.content}")
-                    message.delete()
-                }
-            }
-
-            commands(prefix = "!") {
+            classicCommands(commandPrefix = "!") {
                 command("javadocs") {
-                    if (!allowedInChannel(partialMember, channel, "javadocs")) return@command
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "javadocs"))
+                        return@command
 
-                    logInfo("Searching javadocs for ${words[1]}")
+                    logInfo("Searching javadocs for ${it.words[1]}")
 
-                    docsMessage(this)
+                    docsMessage(it)
                 }
 
                 command("docs") {
-                    if (!allowedInChannel(partialMember, channel, "docs")) return@command
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "docs"))
+                        return@command
 
-                    logInfo("Searching javadocs for ${words[1]}")
+                    logInfo("Searching javadocs for ${it.words[1]}")
 
-                    docsMessage(this)
+                    docsMessage(it)
                 }
 
                 command("mcp") {
-                    if (!allowedInChannel(partialMember, channel, "mcp")) return@command
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "mcp"))
+                        return@command
+
+                    val words = it.words
+                    val authorUsername = it.author.username
 
                     if (words.size < 3) {
                         logWarn("User provided ${words.size} arguments to !mcp, sending error message")
 
-                        channel.helpMessage(author.username, "Too few arguments provided to `!mcp` command")
+                        modulesChannel.helpMessage(authorUsername, "Too few arguments provided to `!mcp` command")
                         return@command
                     }
 
-                    val type = when (val word = sanitizeInput(words[1].toLowerCase())) {
+                    val type = when (val word = words[1].lowercase()) {
                         "field", "method", "class" -> word
                         else -> {
                             logWarn("User provided unrecognized type to !mcp: $word")
-                            channel.helpMessage(author.username, "Unrecognized type `$word`. Valid types are: `method`, `field`, `class`")
+                            val sanitized = word.replace("`", "\\`")
+                            modulesChannel.helpMessage(authorUsername, "Unrecognized type `$sanitized`. Valid types " +
+                                "are: `method`, `field`, `class`")
                             return@command
                         }
                     }
@@ -245,81 +229,91 @@ object CTBot {
                     when (type) {
                         "field" -> {
                             val fields = MCPService.fieldsFromName(words[2], isObf)
-                            channel.mcpFieldMessage(words[2], isObf, fields, author.username, third)
+                            modulesChannel.mcpFieldMessage(words[2], isObf, fields, authorUsername, third)
                         }
                         "method" -> {
                             val methods = MCPService.methodsFromName(words[2], isObf)
-                            channel.mcpMethodMessage(words[2], isObf, methods, author.username, third)
+                            modulesChannel.mcpMethodMessage(words[2], isObf, methods, authorUsername, third)
                         }
                         "class" -> {
                             val classes = MCPService.classesFromName(words[2])
-                            channel.mcpClassMessage(words[2], classes, author.username)
+                            modulesChannel.mcpClassMessage(words[2], classes, authorUsername)
                         }
                     }
                 }
 
                 command("migrate") {
-                    if (!allowedInChannel(partialMember, channel, "migrate")) return@command
+                    val authorUsername = it.author.username
 
-                    logInfo("Sending migrate message to ${author.username}")
-                    channel.migrateMessage(author.username)
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "migrate"))
+                        return@command
+
+                    logInfo("Sending migrate message to $authorUsername")
+                    modulesChannel.migrateMessage(authorUsername)
                 }
 
                 command("help") {
-                    if (!allowedInChannel(partialMember, channel, "help")) return@command
+                    val authorUsername = it.author.username
 
-                    logInfo("Sending help message to ${author.username}")
-                    channel.helpMessage(author.username)
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "help"))
+                        return@command
+
+                    logInfo("Sending help message to $authorUsername")
+                    modulesChannel.helpMessage(authorUsername)
                 }
 
                 command("links") {
-                    if (!allowedInChannel(partialMember, channel, "links")) return@command
+                    val authorUsername = it.author.username
 
-                    logInfo("Sending links message to ${author.username}")
-                    channel.linkMessage(author.username)
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "links"))
+                        return@command
+
+                    logInfo("Sending links message to $authorUsername")
+                    modulesChannel.linkMessage(authorUsername)
                 }
 
                 command("notworking") {
-                    if (!allowedInChannel(partialMember, channel, "notworking")) return@command
+                    val authorUsername = it.author.username
 
-                    logInfo("Sending not working message to ${channel.channelId}")
-                    channel.notWorkingMessage(author.username)
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "notworking"))
+                        return@command
+
+                    logInfo("Sending not working message to ${modulesChannel.channelId}")
+                    modulesChannel.notWorkingMessage(authorUsername)
                 }
 
                 command("learnjs") {
-                    if (!allowedInChannel(partialMember, channel, "learnjs")) return@command
+                    val authorUsername = it.author.username
 
-                    logInfo("Sending learnjs message to ${channel.channelId}")
-                    channel.learnJsMessage(author.username)
+                    if (!allowedInChannel(it.partialMember, modulesChannel, "learnjs"))
+                        return@command
+
+                    logInfo("Sending learnjs message to ${modulesChannel.channelId}")
+                    modulesChannel.learnJsMessage(authorUsername)
                 }
             }
         }
     }
 
-    private suspend fun allowedInChannel(member: GuildMember?, channel: ChannelClient, commandName: String): Boolean {
-        val isAllowed = let {
-            if (!PRODUCTION) return@let true
+    private suspend fun allowedInChannel(member: GuildMember?, channelClient: ChannelClient, commandName: String): Boolean {
+        if (member == null)
+            return false
 
-            val type = channel.get().type
-            if (type == ChannelType.DM || type == ChannelType.GROUP_DM) return@let true
+        val channel = channelClient.getChannel()
 
-            if (member == null) return@let false
-            if (channel.channelId == BOTLAND_CHANNEL) return@let true
-
-            return@let member.roleIds.any {
-                it in allowedRoles
-            }
-        }
-
+        val isAllowed = !PRODUCTION
+            || channel.id == BOTLAND_CHANNEL_ID
+            || channel is DM
+            || member.roleIds.any { it in allowedRoles }
 
         if (!isAllowed) {
-            val username = member?.nickname ?: "<null>"
-            val id = member?.user?.id ?: "<null>"
+            val username = member.nickname
+            val id = member.user?.id
 
-            logInfo("Getting channel name for channel ${channel.channelId}")
-            val channelName = channel.get().name
+            logInfo("Getting channel name for channel ${channel.id}")
+            val channelName = (channel as? NamedChannel)?.name ?: "<null>"
 
-            logWarn("Member $username ($id) is not allowed to use !$commandName in channel $channelName (${channel.channelId})")
+            logWarn("Member $username ($id) is not allowed to use !$commandName in channel $channelName (${channel.id})")
         }
 
         return isAllowed

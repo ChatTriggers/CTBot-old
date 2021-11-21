@@ -1,18 +1,16 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.dsl.footer
-import com.jessecorbett.diskord.util.sendMessage
-import io.ktor.util.KtorExperimentalAPI
+import com.chattriggers.bot.field
+import com.chattriggers.bot.footer
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
-    sendMessage(errorMsg) {
+    sendEmbed(errorMsg) {
         title = "CTBot Help"
         description = """
             CTBot is the friendly ChatTriggers bot designed to help you with all of your CT needs!
@@ -24,7 +22,7 @@ suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
 
         field("MCP Mapping Lookup", """
             `!mcp <type> <name> [owner]`
-            
+
             `<type>` can be `class`, `method`, or `field`.
             `<name>` can be any word. It does not have to be an exact match, and can optionally be obfuscated.
             `[owner]` can optionally be the (partial) name of the owning class.
@@ -32,7 +30,7 @@ suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
 
         field("ChatTriggers Doc Lookup", """
             `!javadocs <search>`
-            
+
             `<search>` can be the name of any public class, object, field, or method.
         """.trimIndent(), false)
 

@@ -1,20 +1,18 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
+import com.chattriggers.bot.field
+import com.chattriggers.bot.image
 import com.chattriggers.bot.types.Module
 import com.chattriggers.bot.types.Release
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.dsl.image
-import com.jessecorbett.diskord.util.sendMessage
-import io.ktor.util.KtorExperimentalAPI
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.onCreateModule(module: Module) {
-    sendMessage("") {
+    sendEmbed {
         title = "Module created: ${module.name}"
         url = "https://www.chattriggers.com/modules/v/${module.name}"
         field("Author", module.owner.name, true)
@@ -34,9 +32,8 @@ suspend fun ChannelClient.onCreateModule(module: Module) {
     }
 }
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
-    sendMessage("") {
+    sendEmbed {
         title = "Release created for module: ${module.name}"
         url = "https://www.chattriggers.com/modules/v/${module.name}"
 
@@ -58,9 +55,8 @@ suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
     }
 }
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.onDeleteModule(module: Module) {
-    sendMessage("") {
+    sendEmbed {
         title = "Module deleted: ${module.name}"
         color = CTBot.MESSAGE_COLOR
         timestamp = ZonedDateTime.now(ZoneOffset.UTC)

@@ -1,18 +1,15 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.footer
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.util.sendMessage
-import io.ktor.util.*
+import com.chattriggers.bot.footer
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.learnJsMessage(username: String) {
-    sendMessage("") {
+    sendEmbed {
         title = "JavaScript Links"
 
         description = """

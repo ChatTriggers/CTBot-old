@@ -1,17 +1,16 @@
 package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.footer
+import com.chattriggers.bot.footer
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.util.sendEmbed
 import com.jessecorbett.diskord.util.sendMessage
-import io.ktor.util.KtorExperimentalAPI
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.migrateMessage(username: String) {
-    sendMessage("") {
+    sendEmbed {
         title = "Module Migration"
 
         description =

@@ -3,56 +3,15 @@ package com.chattriggers.bot
 import com.chattriggers.bot.types.SearchTerm
 import com.copperleaf.kodiak.kotlin.KotlindocInvokerImpl
 import com.copperleaf.kodiak.kotlin.models.KotlinModuleDoc
-import io.ktor.util.KtorExperimentalAPI
 import org.eclipse.jgit.api.Git
 import java.io.File
 import java.nio.file.Files
 
-@KtorExperimentalAPI
 object KDocGenerator {
-    fun getDocs(): KotlinModuleDoc {
-        val ctjsDir = File("./ctjs")
-
-        logInfo("Getting KDocs.")
-        logInfo("CTJS dir: ${ctjsDir.absolutePath}")
-        logInfo("CTJS dir exists: ${ctjsDir.exists()}")
-
-        if (CTBot.PRODUCTION || !ctjsDir.exists()) {
-            if (ctjsDir.exists()) {
-                logInfo("Deleting CTJS dir")
-                ctjsDir.deleteRecursively()
-            }
-
-            logInfo("Cloning ctjs repo")
-            Git.cloneRepository()
-                .setURI("https://github.com/ChatTriggers/ct.js.git")
-                .setBranchesToClone(listOf("refs/heads/master"))
-                .setBranch("refs/heads/master")
-                .setDirectory(ctjsDir)
-                .call()
-            logInfo("ctjs repo cloned")
-        }
-
-        val cacheDir = Files.createTempDirectory("dokkaCache")
-        val runner = KotlindocInvokerImpl(cacheDir)
-
-        val outputDir = File("build/dokka").canonicalFile.apply {
-            deleteRecursively()
-            mkdirs()
-        }
-
-        return runner.getModuleDoc(
-            listOf(File("./ctjs/src/main/kotlin").toPath()),
-            outputDir.toPath()
-        ) {
-            Runnable {
-                // Required, don't remove
-                it.bufferedReader().readText()
-            }
-        }!!
-    }
-
     fun getSearchTerms(): List<SearchTerm> {
+        if (!CTBot.PRODUCTION)
+            return emptyList()
+
         val docs = getDocs()
         val terms = mutableListOf<SearchTerm>()
 
@@ -69,7 +28,7 @@ object KDocGenerator {
             SearchTerm(
                 clazz.name,
                 urlBase,
-                "${clazz.kind.toLowerCase()} $name"
+                "${clazz.kind.lowercase()} $name"
             ).run(terms::add)
 
             clazz.methods.filter { method ->
@@ -135,6 +94,48 @@ object KDocGenerator {
         logInfo("Finished getting search terms")
 
         return terms
+    }
+
+    private fun getDocs(): KotlinModuleDoc {
+        val ctjsDir = File("./ctjs")
+
+        logInfo("Getting KDocs.")
+        logInfo("CTJS dir: ${ctjsDir.absolutePath}")
+        logInfo("CTJS dir exists: ${ctjsDir.exists()}")
+
+        if (!ctjsDir.exists()) {
+            if (ctjsDir.exists()) {
+                logInfo("Deleting CTJS dir")
+                ctjsDir.deleteRecursively()
+            }
+
+            logInfo("Cloning ctjs repo")
+            Git.cloneRepository()
+                .setURI("https://github.com/ChatTriggers/ct.js.git")
+                .setBranchesToClone(listOf("refs/heads/master"))
+                .setBranch("refs/heads/master")
+                .setDirectory(ctjsDir)
+                .call()
+            logInfo("ctjs repo cloned")
+        }
+
+        val cacheDir = Files.createTempDirectory("dokkaCache")
+        val runner = KotlindocInvokerImpl(cacheDir)
+
+        val outputDir = File("build/dokka").canonicalFile.apply {
+            deleteRecursively()
+            mkdirs()
+        }
+
+        return runner.getModuleDoc(
+            listOf(File("./ctjs/src/main/kotlin").toPath()),
+            outputDir.toPath()
+        ) {
+            Runnable {
+                // Required, don't remove
+                it.bufferedReader().readText()
+            }
+        }!!
     }
 
     private fun List<String>.publicMember() = !contains("internal") && !contains("private")

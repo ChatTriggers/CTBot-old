@@ -1,22 +1,15 @@
 package com.chattriggers.bot.messages
 
-import com.chattriggers.bot.CTBot
-import com.chattriggers.bot.Class
-import com.chattriggers.bot.Field
-import com.chattriggers.bot.Method
-import com.jessecorbett.diskord.api.rest.client.ChannelClient
-import com.jessecorbett.diskord.dsl.field
-import com.jessecorbett.diskord.dsl.footer
-import com.jessecorbett.diskord.util.sendMessage
-import io.ktor.util.KtorExperimentalAPI
+import com.chattriggers.bot.*
+import com.jessecorbett.diskord.api.channel.ChannelClient
+import com.jessecorbett.diskord.util.sendEmbed
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, username: String) {
-    sendMessage("") {
+    sendEmbed {
         title = "MCP class search results for \"$name\""
 
         description = classes.joinToString("\n") {
@@ -29,9 +22,8 @@ suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, us
     }
 }
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: List<Method>, username: String, ownerClass: String? = null) {
-    sendMessage("") {
+    sendEmbed {
         title = "MCP method search results for \"$name\""
 
         val sorted = if (ownerClass != null) {
@@ -55,11 +47,10 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
     }
 }
 
-@KtorExperimentalAPI
 suspend fun ChannelClient.mcpFieldMessage(
     name: String, obf: Boolean, fields: List<Field>, username: String, ownerClass: String? = null
 ) {
-    sendMessage("") {
+    sendEmbed {
         title = "MCP field search results for \"$name\""
 
         val sorted = if (ownerClass != null) {
