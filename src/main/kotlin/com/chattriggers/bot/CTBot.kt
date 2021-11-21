@@ -181,25 +181,25 @@ object CTBot {
 
             classicCommands(commandPrefix = "!") {
                 command("javadocs") {
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "javadocs"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "javadocs"))
                         return@command
 
                     logInfo("Searching javadocs for ${it.words[1]}")
 
-                    docsMessage(it)
+                    it.channel.docsMessage(it)
                 }
 
                 command("docs") {
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "docs"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "docs"))
                         return@command
 
                     logInfo("Searching javadocs for ${it.words[1]}")
 
-                    docsMessage(it)
+                    it.channel.docsMessage(it)
                 }
 
                 command("mcp") {
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "mcp"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "mcp"))
                         return@command
 
                     val words = it.words
@@ -208,7 +208,7 @@ object CTBot {
                     if (words.size < 3) {
                         logWarn("User provided ${words.size} arguments to !mcp, sending error message")
 
-                        modulesChannel.helpMessage(authorUsername, "Too few arguments provided to `!mcp` command")
+                        it.channel.helpMessage(authorUsername, "Too few arguments provided to `!mcp` command")
                         return@command
                     }
 
@@ -216,8 +216,8 @@ object CTBot {
                         "field", "method", "class" -> word
                         else -> {
                             logWarn("User provided unrecognized type to !mcp: $word")
-                            val sanitized = word.replace("`", "\\`")
-                            modulesChannel.helpMessage(authorUsername, "Unrecognized type `$sanitized`. Valid types " +
+                            val sanitized = word.replace("`", "")
+                            it.channel.helpMessage(authorUsername, "Unrecognized type `$sanitized`. Valid types " +
                                 "are: `method`, `field`, `class`")
                             return@command
                         }
@@ -229,15 +229,15 @@ object CTBot {
                     when (type) {
                         "field" -> {
                             val fields = MCPService.fieldsFromName(words[2], isObf)
-                            modulesChannel.mcpFieldMessage(words[2], isObf, fields, authorUsername, third)
+                            it.channel.mcpFieldMessage(words[2], isObf, fields, authorUsername, third)
                         }
                         "method" -> {
                             val methods = MCPService.methodsFromName(words[2], isObf)
-                            modulesChannel.mcpMethodMessage(words[2], isObf, methods, authorUsername, third)
+                            it.channel.mcpMethodMessage(words[2], isObf, methods, authorUsername, third)
                         }
                         "class" -> {
                             val classes = MCPService.classesFromName(words[2])
-                            modulesChannel.mcpClassMessage(words[2], classes, authorUsername)
+                            it.channel.mcpClassMessage(words[2], classes, authorUsername)
                         }
                     }
                 }
@@ -245,51 +245,51 @@ object CTBot {
                 command("migrate") {
                     val authorUsername = it.author.username
 
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "migrate"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "migrate"))
                         return@command
 
                     logInfo("Sending migrate message to $authorUsername")
-                    modulesChannel.migrateMessage(authorUsername)
+                    it.channel.migrateMessage(authorUsername)
                 }
 
                 command("help") {
                     val authorUsername = it.author.username
 
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "help"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "help"))
                         return@command
 
                     logInfo("Sending help message to $authorUsername")
-                    modulesChannel.helpMessage(authorUsername)
+                    it.channel.helpMessage(authorUsername)
                 }
 
                 command("links") {
                     val authorUsername = it.author.username
 
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "links"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "links"))
                         return@command
 
                     logInfo("Sending links message to $authorUsername")
-                    modulesChannel.linkMessage(authorUsername)
+                    it.channel.linkMessage(authorUsername)
                 }
 
                 command("notworking") {
                     val authorUsername = it.author.username
 
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "notworking"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "notworking"))
                         return@command
 
-                    logInfo("Sending not working message to ${modulesChannel.channelId}")
-                    modulesChannel.notWorkingMessage(authorUsername)
+                    logInfo("Sending not working message to ${it.channel.channelId}")
+                    it.channel.notWorkingMessage(authorUsername)
                 }
 
                 command("learnjs") {
                     val authorUsername = it.author.username
 
-                    if (!allowedInChannel(it.partialMember, modulesChannel, "learnjs"))
+                    if (!allowedInChannel(it.partialMember, it.channel, "learnjs"))
                         return@command
 
-                    logInfo("Sending learnjs message to ${modulesChannel.channelId}")
-                    modulesChannel.learnJsMessage(authorUsername)
+                    logInfo("Sending learnjs message to ${it.channel.channelId}")
+                    it.channel.learnJsMessage(authorUsername)
                 }
             }
         }

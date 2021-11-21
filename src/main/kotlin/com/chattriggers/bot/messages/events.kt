@@ -3,16 +3,16 @@ package com.chattriggers.bot.messages
 import com.chattriggers.bot.CTBot
 import com.chattriggers.bot.field
 import com.chattriggers.bot.image
+import com.chattriggers.bot.sendMessage
 import com.chattriggers.bot.types.Module
 import com.chattriggers.bot.types.Release
 import com.jessecorbett.diskord.api.channel.ChannelClient
-import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 suspend fun ChannelClient.onCreateModule(module: Module) {
-    sendEmbed {
+    sendMessage {
         title = "Module created: ${module.name}"
         url = "https://www.chattriggers.com/modules/v/${module.name}"
         field("Author", module.owner.name, true)
@@ -33,7 +33,7 @@ suspend fun ChannelClient.onCreateModule(module: Module) {
 }
 
 suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
-    sendEmbed {
+    sendMessage {
         title = "Release created for module: ${module.name}"
         url = "https://www.chattriggers.com/modules/v/${module.name}"
 
@@ -56,7 +56,7 @@ suspend fun ChannelClient.onCreateRelease(module: Module, release: Release) {
 }
 
 suspend fun ChannelClient.onDeleteModule(module: Module) {
-    sendEmbed {
+    sendMessage {
         title = "Module deleted: ${module.name}"
         color = CTBot.MESSAGE_COLOR
         timestamp = ZonedDateTime.now(ZoneOffset.UTC)

@@ -3,14 +3,13 @@ package com.chattriggers.bot.messages
 import com.chattriggers.bot.CTBot
 import com.chattriggers.bot.footer
 import com.jessecorbett.diskord.api.channel.ChannelClient
-import com.jessecorbett.diskord.util.sendEmbed
-import com.jessecorbett.diskord.util.sendMessage
+import com.chattriggers.bot.sendMessage
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 suspend fun ChannelClient.linkMessage(username: String) {
-    sendEmbed ("") {
+    sendMessage {
         title = "Links"
 
         description = """

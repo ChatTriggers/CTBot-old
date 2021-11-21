@@ -3,14 +3,14 @@ package com.chattriggers.bot.messages
 import com.chattriggers.bot.CTBot
 import com.chattriggers.bot.field
 import com.chattriggers.bot.footer
+import com.chattriggers.bot.sendMessage
 import com.jessecorbett.diskord.api.channel.ChannelClient
-import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 suspend fun ChannelClient.helpMessage(username: String, errorMsg: String = "") {
-    sendEmbed(errorMsg) {
+    sendMessage(errorMsg) {
         title = "CTBot Help"
         description = """
             CTBot is the friendly ChatTriggers bot designed to help you with all of your CT needs!

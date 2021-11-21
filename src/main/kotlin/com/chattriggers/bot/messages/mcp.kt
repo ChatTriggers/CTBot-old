@@ -2,14 +2,13 @@ package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.*
 import com.jessecorbett.diskord.api.channel.ChannelClient
-import com.jessecorbett.diskord.util.sendEmbed
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, username: String) {
-    sendEmbed {
+    sendMessage {
         title = "MCP class search results for \"$name\""
 
         description = classes.joinToString("\n") {
@@ -23,7 +22,7 @@ suspend fun ChannelClient.mcpClassMessage(name: String, classes: List<Class>, us
 }
 
 suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: List<Method>, username: String, ownerClass: String? = null) {
-    sendEmbed {
+    sendMessage {
         title = "MCP method search results for \"$name\""
 
         val sorted = if (ownerClass != null) {
@@ -50,7 +49,7 @@ suspend fun ChannelClient.mcpMethodMessage(name: String, obf: Boolean, methods: 
 suspend fun ChannelClient.mcpFieldMessage(
     name: String, obf: Boolean, fields: List<Field>, username: String, ownerClass: String? = null
 ) {
-    sendEmbed {
+    sendMessage {
         title = "MCP field search results for \"$name\""
 
         val sorted = if (ownerClass != null) {

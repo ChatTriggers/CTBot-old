@@ -2,14 +2,14 @@ package com.chattriggers.bot.messages
 
 import com.chattriggers.bot.CTBot
 import com.chattriggers.bot.footer
+import com.chattriggers.bot.sendMessage
 import com.jessecorbett.diskord.api.channel.ChannelClient
-import com.jessecorbett.diskord.util.sendEmbed
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 suspend fun ChannelClient.learnJsMessage(username: String) {
-    sendEmbed {
+    sendMessage {
         title = "JavaScript Links"
 
         description = """

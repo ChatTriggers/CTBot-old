@@ -1,14 +1,13 @@
 package com.chattriggers.bot
 
-import com.jessecorbett.diskord.api.channel.Embed
-import com.jessecorbett.diskord.api.channel.EmbedField
-import com.jessecorbett.diskord.api.channel.EmbedFooter
-import com.jessecorbett.diskord.api.channel.EmbedImage
+import com.jessecorbett.diskord.api.channel.*
+import com.jessecorbett.diskord.util.sendEmbed
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-var formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("'['MM/dd/yy']' '['hh:mm:ss:SSS a z']' ").withZone(ZoneId.of("UTC"))
+var formatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("'['MM/dd/yy']' '['hh:mm:ss:SSS a z']' ").withZone(ZoneId.of("UTC"))
 
 fun logInfo(message: String) {
     print(LocalDateTime.now().format(formatter))
@@ -30,6 +29,16 @@ fun sanitizeInput(message: String) = message
     .replace("*", "\\*")
     .replace("`", "\\`")
     .replace("_", "\\_")
+
+suspend fun ChannelClient.sendMessage(message: String = "", builder: Embed.() -> Unit) {
+    createMessage(
+        CreateMessage(
+            message,
+            allowedMentions = AllowedMentions.NONE,
+            embed = Embed().apply(builder)
+        )
+    )
+}
 
 fun Embed.field(name: String, message: String, inline: Boolean) {
     fields.add(EmbedField(name, message, inline))
